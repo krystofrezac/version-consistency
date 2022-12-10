@@ -10,7 +10,7 @@ module Yarn = {
     }
   }
 
-  let getPackageJsonPackages = packageJsonContent => {
+  let getPackagesGlobPatterns = packageJsonContent => {
     open Json.Decode
     let decoder = oneOf(
       field("workspaces", array(string)),
@@ -23,9 +23,18 @@ module Yarn = {
     }
   }
 
+  let getPackagePathsFromGlobPatterns = globPatterns =>
+    globPatterns
+    ->Belt.Array.flatMap(globPattern => Glob.glob(globPattern ++ "/package.json"))
+    ->Belt.Array.map(path => Node.Path.resolve(path, ""))
+
   let getPathsToPackageJsons = rootDirPath =>
     switch getRootPackageJsonAsJson(rootDirPath) {
-    | Some(packageJson) => getPackageJsonPackages(packageJson)->Some
+    | Some(packageJson) =>
+      switch getPackagesGlobPatterns(packageJson) {
+      | Some(globPatterns) => getPackagePathsFromGlobPatterns(globPatterns)->Some
+      | None => None
+      }
     | None => None
     }
 }

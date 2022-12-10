@@ -13,8 +13,5 @@
     }
   ],
   "suffix": ".bs.js",
-  "bs-dependencies": ["rescript-json"], 
-  "warnings": {
-    "error": true
-  }
+  "bs-dependencies": ["rescript-json"]
 }
