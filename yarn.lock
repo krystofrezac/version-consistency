@@ -2,6 +2,11 @@
 # yarn lockfile v1
 
 
+rescript-json@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/rescript-json/-/rescript-json-1.0.3.tgz#908c5a974af1313a3c4419a730655fd47532f42c"
+  integrity sha512-wCheiNKYsP7dqFho5i/ZdQ2DWI4d1aV26tWF4Gh/KhSEtCd8kA/vQjpeN432XiFKqAYyFQ/jbjKWUdzFPyHKKA==
+
 rescript@^10.0.1:
   version "10.0.1"
   resolved "https://registry.yarnpkg.com/rescript/-/rescript-10.0.1.tgz#5b2da8a8bcfb994bed1eb24820bf10cfb9d8c440"

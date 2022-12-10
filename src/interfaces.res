@@ -10,38 +10,31 @@ module Yarn = {
     }
   }
 
-  let getWorkspaceField = packageJsonContent => {
-    switch packageJsonContent {
-    | Some(object) =>
-      switch Js.Json.decodeObject(object) {
-      | Some(objectContent) =>
-        switch Js.Dict.get(objectContent, "name") { // TODO: Rename to workspace
-        | Some(workspace) => Some(workspace)
+  let getPackageJsonPackages = packageJsonContent => {
+    open Json.Decode
+    let decoder = oneOf(
+      field("workspaces", array(string)),
+      [at("workspaces", ["packages"], array(string))],
+    )
 
-        | None => None
-        }
-      | None => None
-      }
-    | None => None
+    switch decodeValue(packageJsonContent, decoder) {
+    | Ok(packages) => Some(packages)
+    | Error(_err) => None
     }
   }
 
-  let getPathsToPackageJsons = rootDirPath => {
-    let workspace = getRootPackageJsonAsJson(rootDirPath)->getWorkspaceField
-    switch workspace {
-    | Some(name) => Js.Json.decodeString(name)
-
+  let getPathsToPackageJsons = rootDirPath =>
+    switch getRootPackageJsonAsJson(rootDirPath) {
+    | Some(packageJson) => getPackageJsonPackages(packageJson)->Some
     | None => None
     }
-  }
 }
 
-type packageManager = Yarn | NPM
+type packageManager = Yarn
 
 let getPathsToPackageJsons = (packageManager, rootDirPath) => {
   let specificFun = switch packageManager {
   | Yarn => Yarn.getPathsToPackageJsons
-  | NPM => Yarn.getPathsToPackageJsons
   }
 
   specificFun(rootDirPath)

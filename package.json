@@ -8,6 +8,7 @@
     "res:run": "node lib/js/src/main.bs.js"
   },
   "dependencies": {
-    "rescript": "^10.0.1"
+    "rescript": "^10.0.1",
+    "rescript-json": "^1.0.3"
   }
 }
