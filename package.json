@@ -5,11 +5,17 @@
     "res:build": "rescript",
     "res:dev": "rescript build -w",
     "res:format": "rescript format",
-    "res:run": "node lib/js/src/main.bs.js"
+    "res:run": "node lib/js/src/main.bs.js",
+    "test": "jest",
+    "test:watch": "jest --watch"
   },
   "dependencies": {
     "glob": "^8.0.3",
     "rescript": "^10.0.1",
     "rescript-json": "^1.0.3"
+  },
+  "devDependencies": {
+    "@glennsl/rescript-jest": "^0.9.2",
+    "mock-fs": "^5.2.0"
   }
 }
