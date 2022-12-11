@@ -28,15 +28,12 @@ module Yarn = {
     ->Belt.Array.flatMap(globPattern => Glob.glob(globPattern ++ "/package.json"))
     ->Belt.Array.map(path => Node.Path.resolve(path, ""))
 
-  let getPathsToPackageJsons = rootDirPath =>
-    switch getRootPackageJsonAsJson(rootDirPath) {
-    | Some(packageJson) =>
-      switch getPackagesGlobPatterns(packageJson) {
-      | Some(globPatterns) => getPackagePathsFromGlobPatterns(globPatterns)->Some
-      | None => None
-      }
+  let getPathsToPackageJsons = rootDirPath => {
+    switch getRootPackageJsonAsJson(rootDirPath)->Belt.Option.flatMap(getPackagesGlobPatterns) {
+    | Some(globPatterns) => getPackagePathsFromGlobPatterns(globPatterns)->Some
     | None => None
     }
+  }
 }
 
 type packageManager = Yarn

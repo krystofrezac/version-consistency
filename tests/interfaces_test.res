@@ -12,8 +12,7 @@ describe("yarn", () => {
           open Interfaces.Yarn
 
           getRootPackageJsonAsJson(".")
-          ->Belt.Option.getExn
-          ->getPackagesGlobPatterns
+          ->Belt.Option.flatMap(getPackagesGlobPatterns)
           ->expect
           ->toEqual(Some(globPatterns))
         }
@@ -37,8 +36,7 @@ describe("yarn", () => {
           open Interfaces.Yarn
 
           getRootPackageJsonAsJson(".")
-          ->Belt.Option.getExn
-          ->getPackagesGlobPatterns
+          ->Belt.Option.flatMap(getPackagesGlobPatterns)
           ->expect
           ->toEqual(Some(globPatterns))
         }
@@ -75,10 +73,7 @@ describe("yarn", () => {
             ("package.json", createPackageJson(~name="root", ())),
             ("mobile-app/package.json", createPackageJson(~name="mobile-app", ())),
             ("packages/utils/package.json", createPackageJson(~name="utils", ())),
-            (
-              "packages/components/package.json",
-              createPackageJson(~name="components", ()),
-            ),
+            ("packages/components/package.json", createPackageJson(~name="components", ())),
           ]
         }),
       )
@@ -122,12 +117,15 @@ describe("yarn", () => {
           open Interfaces.Yarn
 
           getPathsToPackageJsons(Node.Process.cwd())
-          ->Belt.Option.getExn
-          ->Belt.Array.getBy(
-            result => {
-              open Node
-              result == Path.join([Process.cwd(), expected])
-            },
+          ->Belt.Option.flatMap(
+            paths =>
+              Belt.Array.getBy(
+                paths,
+                result => {
+                  open Node
+                  result == Path.join([Process.cwd(), expected])
+                },
+              ),
           )
           ->Belt.Option.isSome
           ->expect
