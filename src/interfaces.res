@@ -4,13 +4,13 @@ module Yarn = {
       Node.Path.join([rootDirPath, "package.json"])
       ->Node.Fs.readFileSync(#utf8)
       ->Js.Json.parseExn
-      ->Some
+      ->Ok
     } catch {
-    | _ => None
+    | _ => Error("Couldn't read root package.json")
     }
   }
 
-  let getPackagesGlobPatterns = packageJsonContent => {
+  let getWorkspacesPatterns = packageJsonContent => {
     open Json.Decode
     let decoder = oneOf(
       field("workspaces", array(string)),
@@ -18,20 +18,20 @@ module Yarn = {
     )
 
     switch decodeValue(packageJsonContent, decoder) {
-    | Ok(packages) => Some(packages)
-    | Error(_err) => None
+    | Ok(packages) => Ok(packages)
+    | Error(_err) => Error("Couldn't decode package.json. It's probably missing 'workspaces' field")
     }
   }
 
-  let getPackagePathsFromGlobPatterns = globPatterns =>
-    globPatterns
+  let getPackagePathsFromWorkspacesPatterns = workspacesPatterns =>
+    workspacesPatterns
     ->Belt.Array.flatMap(globPattern => Glob.glob(globPattern ++ "/package.json"))
     ->Belt.Array.map(path => Node.Path.resolve(path, ""))
 
   let getPathsToPackageJsons = rootDirPath => {
-    switch getRootPackageJsonAsJson(rootDirPath)->Belt.Option.flatMap(getPackagesGlobPatterns) {
-    | Some(globPatterns) => getPackagePathsFromGlobPatterns(globPatterns)->Some
-    | None => None
+    switch getRootPackageJsonAsJson(rootDirPath)->Belt.Result.flatMap(getWorkspacesPatterns) {
+    | Ok(workspacesPatterns) => getPackagePathsFromWorkspacesPatterns(workspacesPatterns)->Ok
+    | Error(msg) => Error(msg)
     }
   }
 }

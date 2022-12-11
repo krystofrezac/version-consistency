@@ -12,9 +12,9 @@ describe("yarn", () => {
           open Interfaces.Yarn
 
           getRootPackageJsonAsJson(".")
-          ->Belt.Option.flatMap(getPackagesGlobPatterns)
+          ->Belt.Result.flatMap(getWorkspacesPatterns)
           ->expect
-          ->toEqual(Some(globPatterns))
+          ->toEqual(Ok(globPatterns))
         }
 
         test->MockFs.wrapTest(
@@ -36,9 +36,9 @@ describe("yarn", () => {
           open Interfaces.Yarn
 
           getRootPackageJsonAsJson(".")
-          ->Belt.Option.flatMap(getPackagesGlobPatterns)
+          ->Belt.Result.flatMap(getWorkspacesPatterns)
           ->expect
-          ->toEqual(Some(globPatterns))
+          ->toEqual(Ok(globPatterns))
         }
 
         test->MockFs.wrapTest(
@@ -63,7 +63,7 @@ describe("yarn", () => {
       let test = () => {
         open Interfaces.Yarn
 
-        getPackagePathsFromGlobPatterns(["mobile-app", "packages/*"])
+        getPackagePathsFromWorkspacesPatterns(["mobile-app", "packages/*"])
       }
 
       test->MockFs.wrapTest(
@@ -117,6 +117,7 @@ describe("yarn", () => {
           open Interfaces.Yarn
 
           getPathsToPackageJsons(Node.Process.cwd())
+          ->OptionUtils.resultToOption
           ->Belt.Option.flatMap(
             paths =>
               Belt.Array.getBy(
