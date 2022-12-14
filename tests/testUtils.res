@@ -19,3 +19,43 @@ module Yarn = {
     `
   }
 }
+
+module Common = {
+  let getDependenciesEntry = (dependenciesType, dependencies) => {
+    switch dependencies {
+    | Some(dependencies) => {
+        let parsedDependencies =
+          dependencies
+          ->Belt.Array.map(((dependency, version)) => `"${dependency}": "${version}"`)
+          ->Belt.Array.joinWith(",", item => item)
+        `,"${dependenciesType}": {
+          ${parsedDependencies}
+          }
+        `
+      }
+
+    | None => ""
+    }
+  }
+
+  let createPackageJson = (
+    ~name,
+    ~version,
+    ~dependencies as passedDependencis=?,
+    ~devDependencies as passedDevDependencies=?,
+    ~peerDependencies as passedPeerDependencies=?,
+    ~resolutions as passedResolutions=?,
+    (),
+  ) => {
+    `
+  {
+    "name": "${name}",
+    "version": "${version}"
+    ${getDependenciesEntry("dependencies", passedDependencis)}
+    ${getDependenciesEntry("devDependencies", passedDevDependencies)}
+    ${getDependenciesEntry("peerDependencies", passedPeerDependencies)}
+    ${getDependenciesEntry("resolutionsDependencies", passedResolutions)}
+  }
+  `
+  }
+}
