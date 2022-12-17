@@ -17,6 +17,9 @@
       "in-source": false
     }
   ],
+  "warnings": {
+    "error": "+8"
+  },
   "suffix": ".bs.js",
   "bs-dependencies": ["rescript-json"],
   "bs-dev-dependencies": ["@glennsl/rescript-jest"]

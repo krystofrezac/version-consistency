@@ -1,19 +1,19 @@
-type dependencies = array<(string, string)>
-type packageJson = {
-  name: string,
-  version: string,
-  dependencies: option<dependencies>,
-  devDependencies: option<dependencies>,
-  peerDependencies: option<dependencies>,
-  resolutions: option<dependencies>,
-}
-
 let getPackageJsonAsJson = packageJsonPath => {
   try {
     packageJsonPath->Node.Fs.readFileSync(#utf8)->Js.Json.parseExn->Ok
   } catch {
   | _ => Error(`Couldn't read ${packageJsonPath}`)
   }
+}
+
+type packageJsonDependencies = array<(string, string)>
+type packageJson = {
+  name: string,
+  version: string,
+  dependencies: option<packageJsonDependencies>,
+  devDependencies: option<packageJsonDependencies>,
+  peerDependencies: option<packageJsonDependencies>,
+  resolutions: option<packageJsonDependencies>,
 }
 
 let parsePackageJson = packageJsonContent => {
@@ -25,7 +25,14 @@ let parsePackageJson = packageJsonContent => {
     option(field("devDependencies", keyValuePairs(string))),
     option(field("peerDependencies", keyValuePairs(string))),
     option(field("resolutions", keyValuePairs(string))),
-    ~f=(name, version, dependencies, devDependencies, peerDependencies, resolutions) => {
+    ~f=(
+      name,
+      version,
+      dependencies,
+      devDependencies,
+      peerDependencies,
+      resolutions,
+    ): packageJson => {
       name,
       version,
       dependencies,
@@ -41,10 +48,73 @@ let parsePackageJson = packageJsonContent => {
   }
 }
 
-let getPackageDependencies = packageJsonPath => {
-  packageJsonPath->getPackageJsonAsJson->Belt.Result.flatMap(parsePackageJson)
+type dependencyType = Dependency | DevDependency | PeerDependency | Resolution | WorkspacePackage
+type dependency = {
+  dependencyName: string,
+  dependencyVersion: string,
+  packageName: string,
+  dependencyType: dependencyType,
 }
 
-let getDependenciesInfo = packageJsonPaths => {
-  packageJsonPaths->Belt.Array.map(getPackageDependencies)
+let joinDependencyTypeGroups = (dependencyGroups, packageName) => {
+  dependencyGroups->Belt.Array.flatMap(((dependencyGroup, dependencyGroupType)) => {
+    dependencyGroup->Belt.Array.map(((dependencyName, dependencyVersion)) => {
+      dependencyName,
+      dependencyVersion,
+      packageName,
+      dependencyType: dependencyGroupType,
+    })
+  })
+}
+
+let processPackageJsonDependencies = ({
+  name,
+  version,
+  dependencies,
+  devDependencies,
+  peerDependencies,
+  resolutions,
+}) => {
+  let workspacePackage = {
+    dependencyName: name,
+    dependencyVersion: version,
+    packageName: name,
+    dependencyType: WorkspacePackage,
+  }
+
+  [
+    (dependencies, Dependency),
+    (devDependencies, DevDependency),
+    (peerDependencies, PeerDependency),
+    (resolutions, Resolution),
+  ]
+  ->Belt.Array.map(((dependencyTypeGroup, dependencyTypeGroupType)) => (
+    dependencyTypeGroup->Belt.Option.getWithDefault([]),
+    dependencyTypeGroupType,
+  ))
+  ->joinDependencyTypeGroups(name)
+  ->Belt.Array.concat([workspacePackage], _)
+}
+
+let getPackageDependencies = packageJsonPath => {
+  packageJsonPath
+  ->getPackageJsonAsJson
+  ->Belt.Result.flatMap(parsePackageJson)
+  ->Belt.Result.flatMap(parsedPackageJson => processPackageJsonDependencies(parsedPackageJson)->Ok)
+}
+
+let joinPackagesDependencies = dependenciesInfo => {
+  Belt.Array.reduce(dependenciesInfo, Ok([]), (acc, current) => {
+    switch (acc, current) {
+    | (Error(errorAcc), _) => Error(errorAcc)
+    | (_, Error(errorCurrent)) => Error(errorCurrent)
+    | (Ok(okAcc), Ok(okCurrent)) => Belt.Array.concat(okAcc, okCurrent)->Ok
+    }
+  })
+}
+
+let getWorkspaceDependencies = packageJsonPaths => {
+  packageJsonPaths
+  ->Belt.Array.map(packageJsonPath => getPackageDependencies(packageJsonPath))
+  ->joinPackagesDependencies
 }
