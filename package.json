@@ -1,6 +1,9 @@
 {
   "name": "version-consistency",
   "version": "0.0.0",
+  "bin": {
+    "version-consistency": "./bin/index"
+  },
   "scripts": {
     "res:build": "rescript",
     "res:dev": "rescript build -w",
