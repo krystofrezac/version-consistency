@@ -194,3 +194,80 @@ describe("joinPackagesDependencies", () => {
     ->toEqual(Error("error1"))
   })
 })
+
+describe("groupDependencies", () => {
+  test("returns correctly grouped dependencies", () => {
+    [
+      {
+        dependencyName: "a",
+        dependencyVersion: "0.0.0",
+        packageName: "packageA",
+        dependencyType: Dependency,
+      },
+      {
+        dependencyName: "b",
+        dependencyVersion: "0.0.0",
+        packageName: "packageA",
+        dependencyType: Dependency,
+      },
+      {
+        dependencyName: "a",
+        dependencyVersion: "0.0.0",
+        packageName: "packageB",
+        dependencyType: Dependency,
+      },
+      {
+        dependencyName: "c",
+        dependencyVersion: "0.0.0",
+        packageName: "packageA",
+        dependencyType: Dependency,
+      },
+      {
+        dependencyName: "c",
+        dependencyVersion: "0.0.0",
+        packageName: "packageB",
+        dependencyType: Dependency,
+      },
+    ]
+    ->Dependencies.groupDependencies
+    ->expect
+    ->toEqual([
+      [
+        {
+          dependencyName: "a",
+          dependencyVersion: "0.0.0",
+          packageName: "packageA",
+          dependencyType: Dependency,
+        },
+        {
+          dependencyName: "a",
+          dependencyVersion: "0.0.0",
+          packageName: "packageB",
+          dependencyType: Dependency,
+        },
+      ],
+      [
+        {
+          dependencyName: "b",
+          dependencyVersion: "0.0.0",
+          packageName: "packageA",
+          dependencyType: Dependency,
+        },
+      ],
+      [
+        {
+          dependencyName: "c",
+          dependencyVersion: "0.0.0",
+          packageName: "packageA",
+          dependencyType: Dependency,
+        },
+        {
+          dependencyName: "c",
+          dependencyVersion: "0.0.0",
+          packageName: "packageB",
+          dependencyType: Dependency,
+        },
+      ],
+    ])
+  })
+})

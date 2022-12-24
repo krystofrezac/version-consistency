@@ -113,8 +113,30 @@ let joinPackagesDependencies = dependenciesInfo => {
   })
 }
 
+let sortDependenciesByName = dependencies => {
+  let dependencyNameComparator = (a, b) => {
+    let compareResult = Js.String.localeCompare(a.dependencyName, b.dependencyName)
+    switch (compareResult < 0., compareResult > 0.) {
+    | (true, _) => 1
+    | (_, true) => -1
+    | (false, false) => 0
+    }
+  }
+
+  dependencies->Belt.SortArray.stableSortBy(dependencyNameComparator)
+}
+
+let groupDependencies = dependencies => {
+  dependencies
+  ->sortDependenciesByName
+  ->ArrayUtils.groupBy((a, b) => a.dependencyName == b.dependencyName)
+}
+
 let getWorkspaceDependencies = packageJsonPaths => {
   packageJsonPaths
   ->Belt.Array.map(packageJsonPath => getPackageDependencies(packageJsonPath))
   ->joinPackagesDependencies
+  ->Belt.Result.flatMap(joinedPackagesDependencies =>
+    groupDependencies(joinedPackagesDependencies)->Ok
+  )
 }
