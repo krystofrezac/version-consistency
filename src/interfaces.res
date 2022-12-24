@@ -1,12 +1,9 @@
 module Yarn = {
-  let getRootPackageJsonAsJson = rootDirPath => {
+  let getRootPackageJsonAsJson = rootPackageJsonPath => {
     try {
-      Node.Path.join([rootDirPath, "package.json"])
-      ->Node.Fs.readFileSync(#utf8)
-      ->Js.Json.parseExn
-      ->Ok
+      rootPackageJsonPath->Node.Fs.readFileSync(#utf8)->Js.Json.parseExn->Ok
     } catch {
-    | _ => Error("Couldn't read root package.json")
+    | _ => Error(`Couldn't read root package.json (${rootPackageJsonPath})`)
     }
   }
 
@@ -29,8 +26,15 @@ module Yarn = {
     ->Belt.Array.map(path => Node.Path.resolve(path, ""))
 
   let getPathsToPackageJsons = rootDirPath => {
-    switch getRootPackageJsonAsJson(rootDirPath)->Belt.Result.flatMap(getWorkspacesPatterns) {
-    | Ok(workspacesPatterns) => getPackagePathsFromWorkspacesPatterns(workspacesPatterns)->Ok
+    let rootPackageJsonPath = Node.Path.join([rootDirPath, "package.json"])
+    let maybeWorkspacesPatterns =
+      getRootPackageJsonAsJson(rootPackageJsonPath)->Belt.Result.flatMap(getWorkspacesPatterns)
+
+    switch maybeWorkspacesPatterns {
+    | Ok(workspacesPatterns) =>
+      getPackagePathsFromWorkspacesPatterns(workspacesPatterns)
+      ->Belt.Array.concat([rootPackageJsonPath])
+      ->Ok
     | Error(msg) => Error(msg)
     }
   }

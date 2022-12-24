@@ -11,7 +11,7 @@ describe("yarn", () => {
         let test = () => {
           open Interfaces.Yarn
 
-          getRootPackageJsonAsJson(".")
+          getRootPackageJsonAsJson("./package.json")
           ->Belt.Result.flatMap(getWorkspacesPatterns)
           ->expect
           ->toEqual(Ok(globPatterns))
@@ -35,7 +35,7 @@ describe("yarn", () => {
         let test = () => {
           open Interfaces.Yarn
 
-          getRootPackageJsonAsJson(".")
+          getRootPackageJsonAsJson("./package.json")
           ->Belt.Result.flatMap(getWorkspacesPatterns)
           ->expect
           ->toEqual(Ok(globPatterns))
