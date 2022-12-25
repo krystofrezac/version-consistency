@@ -13,9 +13,11 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
+    "colorette": "^2.0.19",
     "glob": "^8.0.3",
     "rescript": "^10.0.1",
-    "rescript-json": "^1.0.3"
+    "rescript-json": "^1.0.3",
+    "semver": "^7.3.8"
   },
   "devDependencies": {
     "@glennsl/rescript-jest": "^0.9.2",
