@@ -132,7 +132,7 @@ let groupDependencies = dependencies => {
   ->ArrayUtils.groupBy((a, b) => a.dependencyName == b.dependencyName)
 }
 
-let getWorkspaceDependencies = packageJsonPaths => {
+let getGroupedWorkspaceDependencies = packageJsonPaths => {
   packageJsonPaths
   ->Belt.Array.map(packageJsonPath => getPackageDependencies(packageJsonPath))
   ->joinPackagesDependencies

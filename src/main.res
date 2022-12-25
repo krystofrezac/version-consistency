@@ -1,6 +1,6 @@
 let check = rootDirPath => {
   Interfaces.getPathsToPackageJsons(Yarn, rootDirPath)->Belt.Result.flatMap(
-    Dependencies.getWorkspaceDependencies,
+    Dependencies.getGroupedWorkspaceDependencies,
   )
 }
 

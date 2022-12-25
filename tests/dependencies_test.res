@@ -48,7 +48,7 @@ describe("parsePackageJSON", () => {
       ~dependencies=[("a", "4.3.2")],
       ~devDependencies=[("b", "0.2.0")],
       ~peerDependencies=[("c", "1.1.2"), ("d", "2.3.2")],
-      ~resolutions=[],
+      ~resolutions=[("e", "1.3.2")],
       (),
     )
     ->Js.Json.parseExn
@@ -61,7 +61,7 @@ describe("parsePackageJSON", () => {
         dependencies: Some([("a", "4.3.2")]),
         devDependencies: Some([("b", "0.2.0")]),
         peerDependencies: Some([("c", "1.1.2"), ("d", "2.3.2")]),
-        resolutions: None,
+        resolutions: Some([("e", "1.3.2")]),
       }),
     )
   })
@@ -269,5 +269,166 @@ describe("groupDependencies", () => {
         },
       ],
     ])
+  })
+})
+
+describe("getGroupedWorkspaceDependencies", () => {
+  test("returns correct groups", () => {
+    let test = () => {
+      Dependencies.getGroupedWorkspaceDependencies([
+        "package.json",
+        "a/package.json",
+        "b/package.json",
+      ])
+      ->expect
+      ->toEqual(
+        {
+          open Dependencies
+          [
+            [
+              {
+                dependencyName: "a",
+                dependencyVersion: "^1.8.9",
+                dependencyType: Dependency,
+                packageName: "root",
+              },
+            ],
+            [
+              {
+                dependencyName: "b",
+                dependencyVersion: "2.3",
+                dependencyType: DevDependency,
+                packageName: "root",
+              },
+              {
+                dependencyName: "b",
+                dependencyVersion: "^2.5.6",
+                dependencyType: PeerDependency,
+                packageName: "packageA",
+              },
+            ],
+            [
+              {
+                dependencyName: "c",
+                dependencyVersion: "~4.5.6",
+                dependencyType: PeerDependency,
+                packageName: "root",
+              },
+              {
+                dependencyName: "c",
+                dependencyVersion: "3.3.3",
+                dependencyType: DevDependency,
+                packageName: "packageA",
+              },
+            ],
+            [
+              {
+                dependencyName: "d",
+                dependencyVersion: "*",
+                dependencyType: Resolution,
+                packageName: "root",
+              },
+              {
+                dependencyName: "d",
+                dependencyVersion: "^3.5.6",
+                dependencyType: PeerDependency,
+                packageName: "packageB",
+              },
+            ],
+            [
+              {
+                dependencyName: "e",
+                dependencyVersion: "~9.8.4",
+                dependencyType: Dependency,
+                packageName: "packageA",
+              },
+              {
+                dependencyName: "e",
+                dependencyVersion: "9.8.4",
+                dependencyType: Resolution,
+                packageName: "packageA",
+              },
+              {
+                dependencyName: "e",
+                dependencyVersion: "^9.7.3",
+                dependencyType: DevDependency,
+                packageName: "packageB",
+              },
+            ],
+            [
+              {
+                dependencyName: "packageA",
+                dependencyVersion: "1.2.3",
+                dependencyType: WorkspacePackage,
+                packageName: "packageA",
+              },
+              {
+                dependencyName: "packageA",
+                dependencyVersion: "^1.2.2",
+                dependencyType: Dependency,
+                packageName: "packageB",
+              },
+            ],
+            [
+              {
+                dependencyName: "packageB",
+                dependencyType: WorkspacePackage,
+                dependencyVersion: "2.0.3",
+                packageName: "packageB",
+              },
+            ],
+            [
+              {
+                dependencyName: "root",
+                dependencyType: WorkspacePackage,
+                dependencyVersion: "0.0.0",
+                packageName: "root",
+              },
+            ],
+          ]
+        }->Ok,
+      )
+    }
+
+    test->MockFs.wrapTest(
+      Js.Dict.fromArray([
+        (
+          "package.json",
+          TestUtils.Common.createPackageJson(
+            ~name="root",
+            ~version="0.0.0",
+            ~dependencies=[("a", "^1.8.9")],
+            ~devDependencies=[("b", "2.3")],
+            ~peerDependencies=[("c", "~4.5.6")],
+            ~resolutions=[("d", "*")],
+            (),
+          ),
+        ),
+        (
+          "a/package.json",
+          TestUtils.Common.createPackageJson(
+            ~name="packageA",
+            ~version="1.2.3",
+            ~dependencies=[("e", "~9.8.4")],
+            ~devDependencies=[("c", "3.3.3")],
+            ~peerDependencies=[("b", "^2.5.6")],
+            ~resolutions=[("e", "9.8.4")],
+            (),
+          ),
+        ),
+        (
+          "b/package.json",
+          TestUtils.Common.createPackageJson(
+            ~name="packageB",
+            ~version="2.0.3",
+            ~dependencies=[("packageA", "^1.2.2")],
+            ~devDependencies=[("e", "^9.7.3")],
+            ~peerDependencies=[("d", "^3.5.6")],
+            ~resolutions=[],
+            (),
+          ),
+        ),
+      ]),
+    )
   })
 })

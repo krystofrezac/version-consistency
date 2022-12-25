@@ -54,7 +54,7 @@ module Common = {
     ${getDependenciesEntry("dependencies", passedDependencis)}
     ${getDependenciesEntry("devDependencies", passedDevDependencies)}
     ${getDependenciesEntry("peerDependencies", passedPeerDependencies)}
-    ${getDependenciesEntry("resolutionsDependencies", passedResolutions)}
+    ${getDependenciesEntry("resolutions", passedResolutions)}
   }
   `
   }
