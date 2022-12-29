@@ -5,8 +5,11 @@ let check = rootDirPath => {
     ->Belt.Result.flatMap(Versions.checkDependenciesVersions)
 
   switch result {
-  | Ok() => Js.log("OK")
-  | Error(error) => Js.log(error)
+  | Ok() => ()
+  | Error(error) => {
+      Js.log(error)
+      Node.Process.exit(1)
+    }
   }
 }
 
