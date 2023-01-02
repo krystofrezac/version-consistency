@@ -1,4 +1,6 @@
-let check = rootDirPath => {
+let check = () => {
+  let rootDirPath = Node.Process.cwd()
+
   let result =
     Interfaces.getPathsToPackageJsons(Yarn, rootDirPath)
     ->Belt.Result.flatMap(Dependencies.getGroupedWorkspaceDependencies)
@@ -13,4 +15,19 @@ let check = rootDirPath => {
   }
 }
 
-check(Node.Process.cwd())
+let runCommand = (action: Cli.cliAction) => {
+  switch action {
+  | Check => check()
+  | Help => Cli.getHelpString()->Js.log
+  | Error => {
+      Cli.getHelpString()->Js.log
+      Node.Process.exit(1)
+    }
+  }
+}
+
+let main = () => {
+  Cli.parseCli()->Cli.evaluateCliAction->runCommand
+}
+
+main()

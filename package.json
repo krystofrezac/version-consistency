@@ -15,6 +15,7 @@
   "dependencies": {
     "colorette": "^2.0.19",
     "glob": "^8.0.3",
+    "minimist": "^1.2.7",
     "rescript": "^10.0.1",
     "rescript-json": "^1.0.3",
     "semver": "^7.3.8"
